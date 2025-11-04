@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LexiAI Quantum DICTIONARY v3.0</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Lucide Icons for high-quality icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Menggunakan font Inter */
+        html { font-family: 'Inter', sans-serif; }
+        
+        /* Tema Quantum: Dark mode default */
+        body {
+            background-color: #0d1117; /* Warna gelap GitHub */
+        }
+
+        /* Styling spesifik untuk kartu */
+        .quantum-card {
+            background-color: #161b22; /* Slightly lighter dark background */
+            border: 1px solid #30363d; /* Border tipis */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Styling Input Search */
+        #search-input {
+            border: 2px solid #38a169; /* Warna hijau yang menonjol */
+            background-color: #0d1117;
+            color: #ffffff;
+            transition: all 0.2s ease-in-out;
+        }
+
+        #search-input:focus {
+            border-color: #48bb78;
+            box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.5);
+        }
+        
+        /* Loader styles */
+        .loader {
+            border-top: 4px solid #38a169;
+            border-right: 4px solid transparent;
+            border-bottom: 4px solid #38a169;
+            border-left: 4px solid transparent;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'quantum-green': '#38a169',
+                        'quantum-blue': '#4c51bf',
+                        'quantum-dark': '#0d1117',
+                        'quantum-light': '#161b22',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="text-white min-h-screen">
+
+    <!-- Container Utama -->
+    <div id="app" class="p-4 sm:p-6 lg:p-8">
+        
+        <!-- Header: LexiAI Quantum DICTIONARY v3.0 -->
+        <header class="text-center mb-8">
+            <h1 class="text-4xl sm:text-5xl font-extrabold text-quantum-green">LexiAI Quantum</h1>
+            <p class="text-xl sm:text-2xl text-gray-400 mt-2">DICTIONARY <span class="text-quantum-blue">v3.0</span></p>
+        </header>
+
+        <!-- Main Grid Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+            <!-- Kolom Kiri: Sidebar & Menu -->
+            <div class="lg:col-span-1 space-y-6">
+                
+                <!-- Navigation Menu -->
+                <nav id="menu-container" class="quantum-card rounded-xl p-4">
+                    <h2 class="text-xl font-semibold mb-4 border-b border-gray-700 pb-2">🚀 Quantum Dashboard</h2>
+                    <!-- Menu items will be injected here -->
+                </nav>
+
+                <!-- Status System -->
+                <div class="quantum-card rounded-xl p-4">
+                    <h2 class="text-xl font-semibold mb-4 border-b border-gray-700 pb-2">⚠️ SYSTEM_OFFLINE</h2>
+                    <p class="text-sm text-red-500 flex items-center">
+                        <i data-lucide="scan" class="w-5 h-5 mr-2"></i> 
+                        <span id="system-status-message">Quantum connection disrupted</span>
+                    </p>
+                    <p class="text-xs text-gray-500 mt-2">Check network and try again</p>
+                </div>
+                
+                <!-- Quantum Portals -->
+                <nav id="portal-container" class="quantum-card rounded-xl p-4">
+                    <h2 class="text-xl font-semibold mb-4 border-b border-gray-700 pb-2">Quantum Portals</h2>
+                    <!-- External links will be injected here -->
+                </nav>
+
+            </div>
+
+            <!-- Kolom Tengah: Search & Results -->
+            <div class="lg:col-span-3 space-y-6">
+                
+                <!-- Search Component -->
+                <div class="quantum-card rounded-xl p-6">
+                    <form id="search-form" class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+                        <input type="text" id="search-input" placeholder="Neural Search..." 
+                               class="flex-grow rounded-lg p-3 text-lg focus:outline-none" required>
+                        <button type="submit" id="search-button"
+                                class="bg-quantum-green hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200 flex items-center justify-center disabled:opacity-50">
+                            <i data-lucide="search" class="w-5 h-5 mr-2"></i> 
+                            <span id="search-button-text">SCAN</span>
+                            <div id="loader" class="loader ml-3 hidden"></div>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Results and Content Area -->
+                <div id="content-display" class="space-y-6">
+                    
+                    <!-- Search Results (Initial State) -->
+                    <div id="search-results-card" class="quantum-card rounded-xl p-6 hidden">
+                        <div id="search-word" class="text-3xl font-bold mb-4 flex items-center justify-between">
+                            <span class="text-quantum-green">Word</span>
+                            <button id="favorite-button" onclick="toggleFavorite()" class="text-gray-500 hover:text-yellow-400 transition duration-200">
+                                <i data-lucide="star" class="w-6 h-6"></i>
+                            </button>
+                        </div>
+                        <div id="phonetic-text" class="text-lg text-gray-400 mb-4">/fəʊˈnɛtɪk/</div>
+                        
+                        <div id="meanings-container" class="space-y-6">
+                            <!-- Meanings will be injected here -->
+                        </div>
+                        
+                        <div id="source-url" class="mt-6 pt-4 border-t border-gray-700 text-sm text-gray-500">
+                            Source: <a href="#" target="_blank" class="text-quantum-blue hover:underline">Quantum Cache</a>
+                        </div>
+                    </div>
+
+                    <!-- History and Favorites View -->
+                    <div id="secondary-view" class="quantum-card rounded-xl p-6 hidden">
+                        <h2 id="secondary-title" class="text-3xl font-bold mb-4 text-quantum-blue">Temporal Log</h2>
+                        <ul id="secondary-list" class="space-y-3">
+                            <!-- List items (History/Favorites) will be injected here -->
+                        </ul>
+                    </div>
+
+                    <!-- System Metrics -->
+                    <div class="quantum-card rounded-xl p-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <h2 class="col-span-full text-xl font-semibold mb-2 border-b border-gray-700 pb-2">System Metrics</h2>
+                        <div class="p-3 bg-quantum-dark rounded-lg text-center">
+                            <p class="text-xl font-bold text-quantum-green" id="metric-analyzed">0</p>
+                            <p class="text-xs text-gray-400">Words Analyzed</p>
+                        </div>
+                        <div class="p-3 bg-quantum-dark rounded-lg text-center">
+                            <p class="text-xl font-bold text-quantum-green" id="metric-cache">0</p>
+                            <p class="text-xs text-gray-400">Quantum Cache</p>
+                        </div>
+                        <div class="p-3 bg-quantum-dark rounded-lg text-center">
+                            <p class="text-xl font-bold text-quantum-green" id="metric-load">0%</p>
+                            <p class="text-xs text-gray-400">Neural Load</p>
+                        </div>
+                        <div class="p-3 bg-quantum-dark rounded-lg text-center">
+                            <p class="text-xl font-bold text-quantum-green" id="metric-accuracy">99.8%</p>
+                            <p class="text-xs text-gray-400">AI Accuracy</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Notification Area (for system status and errors) -->
+                    <div id="notification-area" class="p-4 bg-red-800/30 border border-red-700 rounded-lg hidden">
+                        <p id="notification-message" class="text-red-300 font-semibold"></p>
+                    </div>
+
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-10 text-center text-gray-600 text-sm">
+            &copy; 2025 LexiAI Quantum. All Rights Reserved.
+        </footer>
+
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        const API_BASE_URL = window.location.origin;
+        const state = {
+            currentView: 'dictionary', // 'dictionary', 'favorites', 'history'
+            currentWord: null,
+            favorites: [],
+            history: [],
+            wordsAnalyzed: 0,
+            isFetching: false,
+            lastSearchData: null
+        };
+
+        // --- Utility Functions ---
+
+        /** Menampilkan pesan notifikasi di UI */
+        function showNotification(message, isError = true) {
+            const area = document.getElementById('notification-area');
+            const msg = document.getElementById('notification-message');
+            
+            // Atur warna berdasarkan jenis pesan
+            if (isError) {
+                area.className = 'p-4 bg-red-800/30 border border-red-700 rounded-lg';
+                msg.className = 'text-red-300 font-semibold';
+            } else {
+                area.className = 'p-4 bg-quantum-green/30 border border-quantum-green rounded-lg';
+                msg.className = 'text-quantum-green font-semibold';
+            }
+            
+            msg.textContent = message;
+            area.classList.remove('hidden');
+            
+            // Hilangkan setelah 5 detik (kecuali error API)
+            if (!isError || message.includes('API Kamus Eksternal')) {
+                setTimeout(() => area.classList.add('hidden'), 8000);
+            } else {
+                setTimeout(() => area.classList.add('hidden'), 5000);
+            }
+        }
+
+        /** Memperbarui status koneksi sistem di sidebar */
+        function updateSystemStatus(isHealthy) {
+            const statusCard = document.querySelector('.quantum-card:nth-of-type(2)');
+            const title = statusCard.querySelector('h2');
+            const message = document.getElementById('system-status-message');
+
+            if (isHealthy) {
+                title.innerHTML = '<i data-lucide="shield-check" class="w-5 h-5 mr-2 inline-block"></i> SYSTEM_ONLINE';
+                title.className = 'text-xl font-semibold mb-4 border-b border-gray-700 pb-2 text-quantum-green';
+                message.textContent = 'Quantum connection established';
+                message.className = 'text-sm text-quantum-green flex items-center';
+            } else {
+                title.innerHTML = '⚠️ SYSTEM_OFFLINE';
+                title.className = 'text-xl font-semibold mb-4 border-b border-gray-700 pb-2';
+                message.textContent = 'Quantum connection disrupted';
+                message.className = 'text-sm text-red-500 flex items-center';
+            }
+            // Re-render lucide icons
+            lucide.createIcons();
+        }
+
+        /** Mengambil data konfigurasi awal dan status kesehatan */
+        async function fetchInitialData() {
+            try {
+                const [dataRes, healthRes] = await Promise.all([
+                    fetch(`${API_BASE_URL}/data`),
+                    fetch(`${API_BASE_URL}/health`)
+                ]);
+
+                const data = await dataRes.json();
+                const health = await healthRes.json();
+
+                renderMenu(data.menuItems);
+                renderPortals(data.externalLinks);
+                updateSystemStatus(health.status === 'healthy');
+
+                // Ambil data riwayat dan favorit
+                await fetchFavorites();
+                await fetchHistory();
+
+                // Hitung Words Analyzed dari history
+                state.wordsAnalyzed = state.history.length;
+                document.getElementById('metric-analyzed').textContent = state.wordsAnalyzed;
+
+                // Tampilkan view awal (Kamus)
+                setActiveView('dictionary'); 
+
+            } catch (error) {
+                console.error("Gagal memuat data awal atau health check:", error);
+                updateSystemStatus(false);
+                showNotification("Gagal terhubung ke Backend (Flask). Pastikan server berjalan.", true);
+            }
+        }
+        
+        /** Render Menu di Sidebar */
+        function renderMenu(menuItems) {
+            const container = document.getElementById('menu-container');
+            let html = '<h2 class="text-xl font-semibold mb-4 border-b border-gray-700 pb-2">🚀 Quantum Dashboard</h2>';
+            
+            menuItems.forEach(item => {
+                // Gunakan nama ikon Lucide yang sesuai
+                let iconName;
+                switch (item.id) {
+                    case 'home': iconName = 'home'; break;
+                    case 'dictionary': iconName = 'book-open'; break;
+                    case 'favorites': iconName = 'star'; break;
+                    case 'history': iconName = 'clock'; break;
+                    case 'categories': iconName = 'folder'; break;
+                    case 'learn': iconName = 'graduation-cap'; break;
+                    case 'quiz': iconName = 'help-circle'; break;
+                    case 'settings': iconName = 'settings'; break;
+                    case 'help': iconName = 'life-buoy'; break;
+                    case 'about': iconName = 'info'; break;
+                    default: iconName = 'rocket';
+                }
+                
+                html += `
+                    <a href="#" data-view="${item.id}" class="menu-item block p-3 rounded-lg text-gray-300 hover:bg-quantum-blue/20 hover:text-white transition duration-200 flex items-center mb-1">
+                        <i data-lucide="${iconName}" class="w-5 h-5 mr-3"></i>
+                        <span>${item.name}</span>
+                    </a>
+                `;
+            });
+            container.innerHTML = html;
+            
+            // Attach click listeners to menu items
+            document.querySelectorAll('.menu-item').forEach(el => {
+                el.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    setActiveView(e.currentTarget.getAttribute('data-view'));
+                });
+            });
+
+            // Re-render lucide icons
+            lucide.createIcons();
+        }
+
+        /** Render External Links (Portals) */
+        function renderPortals(links) {
+            const container = document.getElementById('portal-container');
+            let html = '<h2 class="text-xl font-semibold mb-4 border-b border-gray-700 pb-2">Quantum Portals</h2>';
+            
+            links.forEach(link => {
+                let iconName;
+                switch (link.icon) {
+                    case '🌐': iconName = 'globe'; break;
+                    case '🔤': iconName = 'languages'; break;
+                    case '🔄': iconName = 'repeat-2'; break;
+                    case '📝': iconName = 'file-text'; break;
+                    case '🎯': iconName = 'compass'; break;
+                    case '🤖': iconName = 'bot'; break;
+                    case '📖': iconName = 'book'; break;
+                    case '🎧': iconName = 'headphones'; break;
+                    case '💬': iconName = 'message-circle'; break;
+                    case '☁️': iconName = 'cloud'; break;
+                    default: iconName = 'link';
+                }
+
+                html += `
+                    <a href="${link.url}" target="_blank" class="block p-3 rounded-lg text-gray-300 hover:bg-quantum-green/20 hover:text-white transition duration-200 flex items-center mb-1">
+                        <i data-lucide="${iconName}" class="w-5 h-5 mr-3"></i>
+                        <span>${link.name}</span>
+                    </a>
+                `;
+            });
+
+            container.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        // --- Core Dictionary Logic ---
+
+        /** Mengirim permintaan pencarian ke backend */
+        async function submitSearch(word) {
+            if (state.isFetching) return;
+            state.isFetching = true;
+            document.getElementById('loader').classList.remove('hidden');
+            document.getElementById('search-button-text').textContent = 'SCANNING...';
+            document.getElementById('search-button').disabled = true;
+            document.getElementById('notification-area').classList.add('hidden'); // Sembunyikan notif lama
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/search`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ word: word })
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    state.lastSearchData = result;
+                    renderSearchResults(word, result);
+                    state.wordsAnalyzed++;
+                    document.getElementById('metric-analyzed').textContent = state.wordsAnalyzed;
+                } else {
+                    // Penanganan Error dari Backend (Status 503 atau 400)
+                    showNotification(result.error || "Terjadi kesalahan saat mencari kata.", true);
+                    document.getElementById('search-results-card').classList.add('hidden');
+                    state.lastSearchData = null;
+                }
+
+            } catch (error) {
+                console.error("Error during search fetch:", error);
+                showNotification("Terjadi kesalahan jaringan yang tidak terduga di frontend.", true);
+                document.getElementById('search-results-card').classList.add('hidden');
+                state.lastSearchData = null;
+            } finally {
+                state.isFetching = false;
+                document.getElementById('loader').classList.add('hidden');
+                document.getElementById('search-button-text').textContent = 'SCAN';
+                document.getElementById('search-button').disabled = false;
+                // Pastikan riwayat dan favorit diperbarui
+                await fetchFavorites();
+                await fetchHistory();
+            }
+        }
+
+        /** Render hasil pencarian */
+        function renderSearchResults(word, data) {
+            setActiveView('dictionary'); // Pastikan tampilan kembali ke Kamus
+            
+            document.getElementById('search-results-card').classList.remove('hidden');
+            document.getElementById('secondary-view').classList.add('hidden');
+            
+            document.getElementById('search-word').querySelector('span').textContent = word;
+            
+            const phonetic = data[0].phonetic || (data[0].phonetics && data[0].phonetics.length > 0 ? data[0].phonetics[0].text : 'N/A');
+            document.getElementById('phonetic-text').textContent = phonetic;
+            
+            // Tombol favorit harus diperbarui
+            updateFavoriteButton(word);
+            
+            const meaningsContainer = document.getElementById('meanings-container');
+            meaningsContainer.innerHTML = ''; // Bersihkan konten lama
+
+            let meaningsHTML = '';
+            data[0].meanings.forEach((meaning, index) => {
+                meaningsHTML += `
+                    <div class="border-l-4 border-quantum-blue pl-4">
+                        <h3 class="text-xl font-semibold text-gray-300 flex items-center">
+                            <i data-lucide="data-cluster" class="w-5 h-5 mr-2"></i> ${meaning.partOfSpeech.toUpperCase()}
+                        </h3>
+                        <ul class="list-disc list-inside space-y-2 text-gray-400 mt-2 ml-4">
+                `;
+
+                meaning.definitions.forEach(def => {
+                    meaningsHTML += `
+                        <li class="pl-2">
+                            <span class="text-white font-medium">${def.definition}</span>
+                            ${def.example ? `<p class="text-sm italic text-gray-500 mt-1">Example: "${def.example}"</p>` : ''}
+                        </li>
+                    `;
+                });
+
+                if (meaning.synonyms && meaning.synonyms.length > 0) {
+                    meaningsHTML += `
+                        <li class="pl-2">
+                            <span class="text-sm font-bold text-quantum-green">Synonyms:</span> 
+                            <span class="text-sm text-gray-400">${meaning.synonyms.slice(0, 5).join(', ') + (meaning.synonyms.length > 5 ? '...' : '')}</span>
+                        </li>
+                    `;
+                }
+
+                meaningsHTML += `</ul></div>`;
+            });
+            
+            meaningsContainer.innerHTML = meaningsHTML;
+            
+            // Sumber URL
+            const sourceUrl = document.getElementById('source-url').querySelector('a');
+            const url = data[0].sourceUrls && data[0].sourceUrls.length > 0 ? data[0].sourceUrls[0] : '#';
+            sourceUrl.href = url;
+            sourceUrl.textContent = url.replace(/https?:\/\//, '').split('/')[0];
+
+            lucide.createIcons();
+        }
+        
+        // --- Favorites & History Logic ---
+
+        /** Ambil daftar favorit dari backend */
+        async function fetchFavorites() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/favorites`);
+                const result = await response.json();
+                state.favorites = result.favorites || [];
+            } catch (error) {
+                console.error("Gagal mengambil favorit:", error);
+            }
+        }
+
+        /** Ambil daftar riwayat dari backend */
+        async function fetchHistory() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/history`);
+                const result = await response.json();
+                state.history = result.history || [];
+            } catch (error) {
+                console.error("Gagal mengambil riwayat:", error);
+            }
+        }
+
+        /** Toggle Favorite Status */
+        async function toggleFavorite() {
+            const word = document.getElementById('search-word').querySelector('span').textContent;
+            if (!word) return;
+
+            const isFav = state.favorites.includes(word);
+            const url = isFav ? `${API_BASE_URL}/favorites/remove` : `${API_BASE_URL}/favorites`;
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ word: word })
+                });
+
+                if (response.ok) {
+                    await fetchFavorites(); // Perbarui state
+                    updateFavoriteButton(word); // Perbarui tampilan tombol
+                    showNotification(`Kata '${word}' berhasil ${isFav ? 'dihapus dari' : 'ditambahkan ke'} Favorit.`, false);
+                    
+                    // Jika berada di view favorites, refresh list-nya
+                    if (state.currentView === 'favorites') {
+                        renderSecondaryView('Quantum Cache', state.favorites, 'star');
+                    }
+                } else {
+                    showNotification("Gagal memperbarui Favorit.", true);
+                }
+            } catch (error) {
+                showNotification("Gagal berkomunikasi dengan server untuk Favorit.", true);
+            }
+        }
+
+        /** Perbarui tampilan tombol favorit */
+        function updateFavoriteButton(word) {
+            const button = document.getElementById('favorite-button');
+            const icon = button.querySelector('i');
+            
+            if (state.favorites.includes(word)) {
+                // Sudah favorit
+                button.classList.remove('text-gray-500');
+                button.classList.add('text-yellow-400');
+                icon.setAttribute('data-lucide', 'star-fill');
+            } else {
+                // Belum favorit
+                button.classList.remove('text-yellow-400');
+                button.classList.add('text-gray-500');
+                icon.setAttribute('data-lucide', 'star');
+            }
+            lucide.createIcons();
+        }
+
+        // --- View Controller ---
+
+        /** Mengubah tampilan utama antara dictionary, favorites, dan history */
+        function setActiveView(viewId) {
+            state.currentView = viewId;
+            
+            // Hapus kelas aktif dari semua menu item
+            document.querySelectorAll('.menu-item').forEach(el => {
+                el.classList.remove('bg-quantum-blue/50');
+                el.classList.add('hover:bg-quantum-blue/20');
+            });
+
+            // Tambahkan kelas aktif pada menu item yang sesuai
+            const activeMenu = document.querySelector(`[data-view="${viewId}"]`);
+            if (activeMenu) {
+                activeMenu.classList.add('bg-quantum-blue/50');
+                activeMenu.classList.remove('hover:bg-quantum-blue/20');
+            }
+
+            // Tampilkan/Sembunyikan konten
+            document.getElementById('search-results-card').classList.add('hidden');
+            document.getElementById('secondary-view').classList.add('hidden');
+            
+            if (viewId === 'dictionary') {
+                // Tampilkan hasil pencarian terakhir jika ada
+                if (state.lastSearchData) {
+                    document.getElementById('search-results-card').classList.remove('hidden');
+                } else {
+                     // Tampilkan pesan kosong jika belum ada pencarian
+                     document.getElementById('secondary-view').classList.remove('hidden');
+                     // FIX: Menggunakan 'Neural Search' sebagai judul dan pesan yang lebih sesuai
+                     renderSecondaryView('Neural Search', ['Masukkan kata kunci untuk memulai SCAN neural.'], 'book-open');
+                }
+
+            } else if (viewId === 'favorites') {
+                // FIX: Menggunakan 'Quantum Cache' sebagai judul untuk Favorit
+                renderSecondaryView('Quantum Cache', state.favorites, 'star');
+            } else if (viewId === 'history') {
+                renderSecondaryView('Temporal Log', state.history, 'clock');
+            } else {
+                // Tampilan default untuk home, settings, dll.
+                renderSecondaryView(viewId.charAt(0).toUpperCase() + viewId.slice(1), ['Fitur ini sedang dalam pengembangan Quantum AI.'], 'cpu');
+            }
+        }
+
+        /** Render tampilan sekunder (History, Favorites, atau Info) */
+        function renderSecondaryView(title, data, iconName) {
+            document.getElementById('secondary-title').textContent = title;
+            document.getElementById('secondary-view').classList.remove('hidden');
+            
+            const listContainer = document.getElementById('secondary-list');
+            listContainer.innerHTML = '';
+            
+            if (data.length === 0 || (data.length === 1 && data[0].includes('Masukkan kata'))) {
+                listContainer.innerHTML = `<li class="text-gray-500 italic p-3 text-center border border-gray-700 rounded-lg">Tidak ada data di sini.</li>`;
+                return;
+            }
+
+            data.forEach((item, index) => {
+                let itemText = item;
+                let clickAction = '';
+                
+                // Hanya history dan favorites yang bisa diklik untuk pencarian ulang
+                if (state.currentView === 'favorites' || state.currentView === 'history') {
+                    itemText = `<a href="#" onclick="document.getElementById('search-input').value='${item}'; submitSearch('${item}'); return false;" class="text-quantum-green hover:underline">${item}</a>`;
+                    clickAction = `onclick="document.getElementById('search-input').value='${item}'; submitSearch('${item}'); return false;"`;
+                }
+
+                listContainer.innerHTML += `
+                    <li class="p-3 quantum-card rounded-lg flex justify-between items-center transition duration-200 hover:bg-quantum-blue/30">
+                        <div class="flex items-center text-gray-300">
+                            <i data-lucide="${iconName}" class="w-4 h-4 mr-3 text-quantum-blue"></i>
+                            <span class="font-medium">${itemText}</span>
+                        </div>
+                    </li>
+                `;
+            });
+            lucide.createIcons();
+        }
+
+        // --- Event Listeners and Initialization ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchInitialData();
+
+            // Setup Search Form Submission
+            document.getElementById('search-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const word = document.getElementById('search-input').value.trim();
+                if (word) {
+                    submitSearch(word);
+                }
+            });
+            
+            // Set default view on load
+            setActiveView('dictionary');
+        });
+        
+    </script>
+</body>
+</html>
